@@ -46,7 +46,6 @@ namespace backend.Services.Implementations
             return _mapper.Map<ICollection<TechnologyLevelDto>>(levels);
         }
 
-
         public bool UpdateLevel(TechnologyLevelToUpdateDto updatedLevel, int levelId)
         {
             if (updatedLevel == null)

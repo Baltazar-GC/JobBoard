@@ -51,17 +51,11 @@ namespace backend.Repositories.Implementations
             return _context.TechnologyLevels?.ToList();
         }
 
-        public bool IsLevel(int levelId)
+        public async Task<bool> UpdateLevel(TechnologyLevel updatedLevel)
         {
-            var level = _context.TechnologyLevels?.FirstOrDefault(d => d.TechnologyLevelId == levelId);
-            if (level is null)
-                return false;
-            return true;
-        }
+            this._context.Update(updatedLevel);
 
-        public bool UpdateLevel()
-        {
-            return SaveChanges();
+            return await SaveChanges();
         }
     }
 }
