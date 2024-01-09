@@ -2,7 +2,6 @@
 {
     public interface IRepository
     {
-        bool SaveChanges();
-
+        Task<bool> SaveChanges();
     }
 }

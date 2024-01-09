@@ -4,12 +4,15 @@ namespace backend.Repositories.Interfaces
 {
     public interface ITechnologyRepository
     {
-        bool AddTechnology(Technology newTechnology);
-        Technology? GetTechnology(int technologyId);
-        bool IsTechnology(int technologyId);
-        ICollection<Technology>? GetTechnologies();
-        bool UpdateTechnology();
-        bool DeleteTechnology(int technologyDeletedId);
+        Task<bool> Add(Technology newTechnology);
+
+        Task<Technology?> Get(int technologyId);
+
+        Task<ICollection<Technology>> List();
+
+        Task<bool> Update(Technology updatedTechnology);
+        
+        Task<bool> Delete(int technologyDeletedId);
     }
 
 }

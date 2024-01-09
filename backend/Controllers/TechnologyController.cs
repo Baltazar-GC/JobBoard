@@ -1,56 +1,51 @@
-﻿using backend.Models;
-using backend.Services.Interfaces;
+﻿using AutoMapper;
+using backend.Entities;
+using backend.Models;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
 {
-    [Route("api/Technologies")]
+    [Route("api/technologies")]
     [ApiController]
     public class TechnologyController : ControllerBase
     {
-        private readonly ITechnologyService technologyService;
+        private readonly ITechnologyRepository technologyService;
+        private readonly IMapper mapper;
 
-        public TechnologyController(ITechnologyService technologyService)
+        public TechnologyController(ITechnologyRepository technologyService, IMapper mapper)
         {
             this.technologyService = technologyService;
+            this.mapper = mapper;
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer")]
         [HttpGet]
-        public ActionResult<ICollection<TechnologyDto>> GetTechnologies()
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer")]
+        public async Task<ActionResult<ICollection<TechnologyDto>>> List()
         {
+            var technologies = await this.technologyService.List();
 
-            var technologies = this.technologyService.GetTechnologies();
-
-            if (technologies == null)
-                return NotFound("No se encontraron tecnologias cargadas en el sistema.");
-
-
-            return Ok(technologies);
+            return Ok(this.mapper.Map<ICollection<TechnologyDto>>(technologies));
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer")]
         [HttpGet("{technologyId}")]
-        public ActionResult<TechnologyDto> GetTechnology(int technologyId)
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer")]
+        public async Task<ActionResult<TechnologyDto>> Get(int technologyId)
         {
-            var technology = this.technologyService.GetTechnology(technologyId);
+            var technology = await this.technologyService.Get(technologyId);
 
-            if (technology is null)
-                return NotFound("No se encontro la tecnologia buscada");
+            if (technology == null)
+                return NotFound("We couldn't find that technology");
 
             return Ok(technology);
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpPost]
-        public ActionResult AddTechnology(TechnologyToCreationDto techToCreationDto)
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        public async Task<ActionResult> Add(TechnologyToCreationDto newTechnology)
         {
-            if (techToCreationDto == null)
-                return BadRequest("Ingrese los campos correctos");
-
-            var result = this.technologyService.AddTechnology(techToCreationDto);
+            var result = await this.technologyService.Add(this.mapper.Map<Technology>(newTechnology));
 
             if (result)
                 return Ok("Technology created successfully");
@@ -58,41 +53,41 @@ namespace backend.Controllers
             return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpPut("{technologyId}")]
-        public ActionResult UpdateLevel(TechnologyToUpdateDto techToUpdateDto, int technologyId)
-        {
-            if (techToUpdateDto == null)
-                return BadRequest("Ingrese los campos correctos.");
-
-            var techExist = this.technologyService.GetTechnology(technologyId);
-
-            if (techExist == null)
-                return NotFound("No se encontro la tecnologia que desea actualizar.");
-
-            var result = this.technologyService.UpdateTechnology(techToUpdateDto, technologyId);
-            if (result)
-                return Ok("Tecnologia actualizada correctamente.");
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
-        }
-
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
-        [HttpDelete("{technologyId}")]
-        public ActionResult DeleteTechnology(int technologyId)
+        public async Task<ActionResult> Update(TechnologyToUpdateDto updatedTechnology, int technologyId)
         {
-            var techExist = this.technologyService.GetTechnology(technologyId);
+            if(updatedTechnology.Id != technologyId)
+                return BadRequest();
 
-            if (techExist == null)
-                return NotFound("No se encontro la tecnologia que desea eliminar");
+            var technology = await this.technologyService.Get(technologyId);
 
-            var result = this.technologyService.DeleteTechnology(technologyId);
+            if (technology == null)
+                return NotFound("We couldn't find that technology");
+
+            var result = await this.technologyService.Update(this.mapper.Map<Technology>(updatedTechnology));
 
             if (result)
-                return Ok("Tecnologia eliminada correctamente.");
+                return Ok("Technology updated successfully");
 
             return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
-
         }
 
+        [HttpDelete("{technologyId}")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        public async Task<ActionResult> Delete(int technologyId)
+        {
+            var technology = await this.technologyService.Get(technologyId);
+
+            if (technology == null)
+                return NotFound("We couldn't find that technology");
+
+            var result = await this.technologyService.Delete(technologyId);
+
+            if (result)
+                return Ok("Technology deleted successfully");
+
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
+        }
     }
 }

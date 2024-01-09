@@ -12,9 +12,9 @@ namespace backend.Repositories.Implementations
             _context = context;
         }
 
-        public bool SaveChanges()
+        public async Task<bool> SaveChanges()
         {
-            return (_context.SaveChanges() >= 0);
+            return await _context.SaveChangesAsync() >= 0;
         }
     }
 }

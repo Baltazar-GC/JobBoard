@@ -1,77 +1,55 @@
 ﻿using backend.Contexts;
 using backend.Entities;
 using backend.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repositories.Implementations
 {
     public class TechnologyRepository : Repository, ITechnologyRepository
     {
-        private readonly ISkillRepository _skillRepository;
-        public TechnologyRepository(ApplicationUtnContext context, ISkillRepository skillRepository) : base(context)
+        public TechnologyRepository(ApplicationUtnContext context) : base(context)
         {
-            _skillRepository = skillRepository;
         }
 
-
-        public bool AddTechnology(Technology newTechnology)
+        public async Task<bool> Add(Technology newTechnology)
         {
             if (newTechnology is null)
                 return false;
 
             _context.Technologies?.Add(newTechnology);
 
-
-
-
-            return SaveChanges();
+            return await SaveChanges();
         }
 
-        public bool DeleteTechnology(int deletedTechnologyId)
+        public async Task<bool> Delete(int deletedTechnologyId)
         {
-            var technology = GetTechnology(deletedTechnologyId);
+            var technology = await Get(deletedTechnologyId);
 
             if (technology == null)
                 return false;
 
             _context.Technologies?.Remove(technology);
 
-
-            return SaveChanges();
-
+            return await SaveChanges();
         }
 
-        public Technology? GetTechnology(int technologyId)
+        public async Task<Technology?> Get(int technologyId)
         {
-            var tecnologyExist = IsTechnology(technologyId);
-            if (tecnologyExist)
-                return _context.Technologies?.FirstOrDefault(d => d.TechnologyId == technologyId);
-            return null;
+            return await _context.Technologies.FirstOrDefaultAsync(d => d.TechnologyId == technologyId);
         }
 
-        public ICollection<Technology>? GetTechnologies()
+        public async Task<ICollection<Technology>> List()
         {
-            var technologies = _context.Technologies?.ToList();
+            var technologies = await _context.Technologies.ToListAsync();
 
-            if (technologies != null || technologies.Count() > 0)
-                return technologies;
-
-            return null;
-
+            return technologies;
         }
 
-        public bool IsTechnology(int technologyId)
+        public async Task<bool> Update(Technology updatedTechnology)
         {
-            var technology = _context.Technologies?.FirstOrDefault(d => d.TechnologyId == technologyId);
+            _context.Update(updatedTechnology);
 
-            if (technology is null)
-                return false;
-
-            return true;
-        }
-
-        public bool UpdateTechnology()
-        {
-            return SaveChanges();
+            return await SaveChanges();
         }
     }
 }
