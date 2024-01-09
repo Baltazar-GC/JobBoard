@@ -13,20 +13,20 @@ namespace backend.Contexts
         {
         }
 
-        public DbSet<Student>? Students { get; set; }
-        public DbSet<Employer>? Employers { get; set; }
-        public DbSet<Admin>? Admins { get; set; }
-        public DbSet<Degree>? Degrees { get; set; }
-        public DbSet<Technology>? Technologies { get; set; }
-        public DbSet<TechnologyLevel>? TechnologyLevels { get; set; }
-        public DbSet<Skill>? Skills { get; set; }
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Employer> Employers { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Degree> Degrees { get; set; }
+        public DbSet<Technology> Technologies { get; set; }
+        public DbSet<TechnologyLevel> TechnologyLevels { get; set; }
+        public DbSet<Skill> Skills { get; set; }
         public DbSet<StudentPersonalInformation> StudentsPersonalInformation { get; set; }
         public DbSet<StudentCollegeInformation> StudentsCollegeInformation { get; set; }
         public DbSet<BusinessInformation> BusinessesInformation { get; set; }
         public DbSet<BusinessContact> BusinessesContacts { get; set; }
         public DbSet<InternshipOffer> InternshipOffers { get; set; }
         public DbSet<HiredEmployeeOffer> HiredEmployeeOffers { get; set; }
-        public DbSet<OtherSkills>? OtherSkills { get; set; }
+        public DbSet<OtherSkills> OtherSkills { get; set; }
         public DbSet<StudentExtraData> StudentsExtraData { get; set; }
         public DbSet<ApplicationInternship> InternshipApplications { get; set; }
         public DbSet<ApplicationHired> HiredApplications { get; set; }
