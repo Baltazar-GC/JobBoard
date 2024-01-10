@@ -50,7 +50,7 @@ namespace backend.Controllers
             if (result)
                 return Ok("Technology created successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
 
         [HttpPut("{technologyId}")]
@@ -70,7 +70,7 @@ namespace backend.Controllers
             if (result)
                 return Ok("Technology updated successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
 
         [HttpDelete("{technologyId}")]
@@ -87,7 +87,7 @@ namespace backend.Controllers
             if (result)
                 return Ok("Technology deleted successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
     }
 }

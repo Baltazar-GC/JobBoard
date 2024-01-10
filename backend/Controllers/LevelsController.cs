@@ -1,6 +1,8 @@
-﻿using backend.Models;
+﻿using AutoMapper;
+using backend.Entities;
+using backend.Models;
 using backend.Models.TechnologyLevel;
-using backend.Services.Interfaces;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,36 +10,33 @@ namespace backend.Controllers
 {
     [Route("api/levels")]
     [ApiController]
-    public class SeniorityController : ControllerBase
+    public class LevelsController : ControllerBase
     {
-        private readonly ITechnologyLevelService _levelService;
+        private readonly ITechnologyLevelRepository levelsService;
+        private readonly IMapper mapper;
 
-        public SeniorityController(ITechnologyLevelService levelService)
+        public LevelsController(ITechnologyLevelRepository levelsService, IMapper mapper)
         {
-            _levelService = levelService;
+            this.levelsService = levelsService;
+            this.mapper = mapper;
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer")]
         [HttpGet]
-        public ActionResult<ICollection<TechnologyLevelDto>> GetLevels()
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer")]
+        public async Task<ActionResult<ICollection<TechnologyLevelDto>>> List()
         {
-
-            var levels = _levelService.GetLevels();
-
-            if (levels == null)
-                return NotFound("No se encontraron niveles de seniority cargados.");
-
+            var levels = await this.levelsService.List();
 
             return Ok(levels);
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer")]
         [HttpGet("{levelId}")]
-        public ActionResult<TechnologyLevelDto> GetLevel(int levelId)
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer")]
+        public async Task<ActionResult<TechnologyLevelDto>> Get(int levelId)
         {
-            var level = _levelService.GetLevel(levelId);
+            var level = await this.levelsService.Get(levelId);
 
-            if (level is null)
+            if (level == null)
                 return NotFound("We couldn't find that level");
 
             return Ok(level);
@@ -45,56 +44,54 @@ namespace backend.Controllers
 
         [HttpPost]
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
-        public ActionResult AddLevel(TechnologyLevelToCreationDto levelToCreationDto)
+        public async Task<ActionResult> Add(TechnologyLevelToCreationDto levelToCreationDto)
         {
             if (levelToCreationDto == null)
-                return BadRequest("Debes enviar los campos correctos.");
+                return BadRequest();
 
-            var result = _levelService.AddLevel(levelToCreationDto);
+            var result = await this.levelsService.Add(this.mapper.Map<TechnologyLevel>(levelToCreationDto));
 
             if (result)
-                return Ok("Nivel de seniority creado con exito!");
+                return Ok("Level created successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
-
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
-
 
         [HttpPut("{levelId}")]
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
-        public ActionResult UpdateLevel(TechnologyLevelToUpdateDto levelToUpdateDto, int levelId)
+        public async Task<ActionResult> Update(TechnologyLevelToUpdateDto levelToUpdateDto, int levelId)
         {
-            if (levelToUpdateDto == null)
-                return BadRequest("Debes enviar los campos correctos.");
+            if (levelToUpdateDto.Id != levelId)
+                return BadRequest();
 
-            var levelExist = _levelService.GetLevel(levelId);
+            var levelExist = await this.levelsService.Get(levelId);
 
             if (levelExist == null)
                 return NotFound("We couldn't find that level");
 
-            var result = _levelService.UpdateLevel(levelToUpdateDto, levelId);
+            var result = await this.levelsService.Update(this.mapper.Map<TechnologyLevel>(levelToUpdateDto));
 
             if (result)
-                return Ok("Nivel de seniority actualizado con exito!");
+                return Ok("Level updated successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
 
         [HttpDelete("{levelId}")]
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
-        public ActionResult DeleteLevel(int levelId)
+        public async Task<ActionResult> DeleteLevel(int levelId)
         {
-            var levelExist = _levelService.GetLevel(levelId);
+            var levelExist = await this.levelsService.Get(levelId);
 
             if (levelExist == null)
                 return NotFound("We couldn't find that level");
 
-            var result = _levelService.DeleteLevel(levelId);
+            var result = await this.levelsService.Delete(levelId);
 
             if (result)
-                return Ok("Nivel de seniority eliminado con exito.");
+                return Ok("Level deleted successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
     }
 }

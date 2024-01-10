@@ -1,59 +1,50 @@
 ﻿using backend.Contexts;
 using backend.Entities;
 using backend.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repositories.Implementations
 {
     public class TechnologyLevelRepository : Repository, ITechnologyLevelRepository
     {
-        private readonly ISkillRepository _skillRepository;
-        public TechnologyLevelRepository(ApplicationUtnContext context, ISkillRepository skillRepository) : base(context)
+        public TechnologyLevelRepository(ApplicationUtnContext context) : base(context)
         {
-            _skillRepository = skillRepository;
         }
 
-
-        public bool AddLevel(TechnologyLevel newLevel)
+        public async Task<bool> Add(TechnologyLevel newLevel)
         {
-            if (newLevel is null)
-                return false;
-
             _context.TechnologyLevels?.Add(newLevel);
 
-
-            return SaveChanges();
-
+            return await SaveChanges();
         }
 
-        public bool DeleteLevel(int deletedLevelId)
+        public async Task<bool> Delete(int deletedLevelId)
         {
-            var level = GetLevel(deletedLevelId);
+            var level = await Get(deletedLevelId);
+
             if (level != null)
             {
-                _context.TechnologyLevels?.Remove(level);
+                _context.TechnologyLevels.Remove(level);
 
-                return SaveChanges();
+                return await SaveChanges();
             }
+
             return false;
-
         }
 
-        public TechnologyLevel? GetLevel(int levelId)
+        public async Task<TechnologyLevel?> Get(int levelId)
         {
-            var levelExist = IsLevel(levelId);
-            if (levelExist)
-                return _context.TechnologyLevels?.FirstOrDefault(d => d.TechnologyLevelId == levelId);
-            return null;
+            return await _context.TechnologyLevels.FirstOrDefaultAsync(d => d.TechnologyLevelId == levelId);
         }
 
-        public ICollection<TechnologyLevel>? GetLevels()
+        public async Task<ICollection<TechnologyLevel>> List()
         {
-            return _context.TechnologyLevels?.ToList();
+            return await _context.TechnologyLevels.ToListAsync();
         }
 
-        public async Task<bool> UpdateLevel(TechnologyLevel updatedLevel)
+        public async Task<bool> Update(TechnologyLevel updatedLevel)
         {
-            this._context.Update(updatedLevel);
+            _context.Update(updatedLevel);
 
             return await SaveChanges();
         }
