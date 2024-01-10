@@ -1,4 +1,5 @@
-﻿using backend.Models.TechnologyLevel;
+﻿using backend.Entities;
+using backend.Models.TechnologyLevel;
 
 namespace backend.Services.Interfaces
 {
@@ -7,7 +8,7 @@ namespace backend.Services.Interfaces
         bool AddLevel(TechnologyLevelToCreationDto newLevel);
         TechnologyLevelDto? GetLevel(int levelId);
         ICollection<TechnologyLevelDto>? GetLevels();
-        bool UpdateLevel(TechnologyLevelToUpdateDto updatedLevel, int levelId);
+        bool UpdateLevel(TechnologyLevel updatedLevel);
         bool DeleteLevel(int deletedLevelId);
     }
 }

@@ -2,7 +2,6 @@
 using backend.Models.TechnologyLevel;
 using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -12,7 +11,6 @@ namespace backend.Controllers
     public class SeniorityController : ControllerBase
     {
         private readonly ITechnologyLevelService _levelService;
-
 
         public SeniorityController(ITechnologyLevelService levelService)
         {
@@ -37,15 +35,10 @@ namespace backend.Controllers
         [HttpGet("{levelId}")]
         public ActionResult<TechnologyLevelDto> GetLevel(int levelId)
         {
-
-
             var level = _levelService.GetLevel(levelId);
 
-
-
             if (level is null)
-                return NotFound("No se encontro el nivel de seniority.");
-
+                return NotFound("We couldn't find that level");
 
             return Ok(level);
         }
@@ -54,7 +47,6 @@ namespace backend.Controllers
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         public ActionResult AddLevel(TechnologyLevelToCreationDto levelToCreationDto)
         {
-
             if (levelToCreationDto == null)
                 return BadRequest("Debes enviar los campos correctos.");
 
@@ -72,16 +64,13 @@ namespace backend.Controllers
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         public ActionResult UpdateLevel(TechnologyLevelToUpdateDto levelToUpdateDto, int levelId)
         {
-
-
             if (levelToUpdateDto == null)
                 return BadRequest("Debes enviar los campos correctos.");
 
             var levelExist = _levelService.GetLevel(levelId);
 
             if (levelExist == null)
-                return NotFound("No se encontro el nivel de seniority que intentas actualizar.");
-
+                return NotFound("We couldn't find that level");
 
             var result = _levelService.UpdateLevel(levelToUpdateDto, levelId);
 
@@ -89,18 +78,16 @@ namespace backend.Controllers
                 return Ok("Nivel de seniority actualizado con exito!");
 
             return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
-
         }
 
         [HttpDelete("{levelId}")]
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         public ActionResult DeleteLevel(int levelId)
         {
-
             var levelExist = _levelService.GetLevel(levelId);
 
             if (levelExist == null)
-                return NotFound("No se encontro el nivel de seniority que buscas eliminar");
+                return NotFound("We couldn't find that level");
 
             var result = _levelService.DeleteLevel(levelId);
 
@@ -108,7 +95,6 @@ namespace backend.Controllers
                 return Ok("Nivel de seniority eliminado con exito.");
 
             return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
-
         }
     }
 }
