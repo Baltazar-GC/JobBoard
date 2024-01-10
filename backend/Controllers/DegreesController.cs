@@ -1,5 +1,8 @@
-﻿using backend.Models;
+﻿using AutoMapper;
+using backend.Entities;
+using backend.Models;
 using backend.Models.Degree;
+using backend.Repositories.Interfaces;
 using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,103 +14,90 @@ namespace backend.Controllers
     [ApiController]
     public class DegreesController : ControllerBase
     {
-        private readonly IDegreeService _degreeService;
+        private readonly IDegreeRepository degreeService;
+        private readonly IMapper mapper;
 
-
-        public DegreesController(IDegreeService degreeService)
+        public DegreesController(IDegreeRepository degreeService, IMapper mapper)
         {
-            _degreeService = degreeService;
+            this.degreeService = degreeService;
+            this.mapper = mapper;
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer, ApprovedEmployer")]
         [HttpGet]
-        public ActionResult<ICollection<DegreeDto>> GetDegrees()
-        {
-
-            var degrees = _degreeService.GetDegrees();
-
-            if (degrees == null || degrees.Count() <= 0)
-                return NotFound("No se encontraron carreras cargadas");
-
-
-            return Ok(degrees);
-        }
-
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer, ApprovedEmployer")]
-        [HttpGet("{degreeId}")]
-        public ActionResult<DegreeDto> GetLevel(int degreeId)
+        public async Task<ActionResult<ICollection<DegreeDto>>> List()
         {
+            var degrees = await this.degreeService.List();
 
 
-            var degree = _degreeService.GetDegree(degreeId);
-
-
-
-            if (degree is null)
-                return NotFound("Carrera no encontrada.");
-
-
-            return Ok(degree);
+            return Ok(this.mapper.Map<ICollection<DegreeDto>>(degrees));
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
-        [HttpPost]
-        public ActionResult AddDegree(DegreeToCreationDto degreeToCreationDto)
+        [HttpGet("{degreeId}")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, Student, Employer, ApprovedEmployer")]
+        public async Task<ActionResult<DegreeDto>> Get(int degreeId)
         {
+            var degree = await this.degreeService.Get(degreeId);
 
+            if (degree == null)
+                return NotFound("We couldn't find that degree");
+
+            return Ok(this.mapper.Map<DegreeDto>(degree));
+        }
+
+        [HttpPost]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        public async Task<ActionResult> Add(DegreeToCreationDto degreeToCreationDto)
+        {
             if (degreeToCreationDto == null)
-                return BadRequest("Debes ingresar los campos correctos.");
+                return BadRequest();
 
-            var result = _degreeService.AddDegree(degreeToCreationDto);
+            var result = await this.degreeService.Add(this.mapper.Map<Degree>(degreeToCreationDto));
 
             if (result)
-                return Ok("Carrera creada con exito!");
+                return Ok("Degree created successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
-
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpPut("{degreeId}")]
-        public ActionResult UpdateDegree(DegreeToUpdateDto degreeToUpdateDto, int degreeId)
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        public async Task<ActionResult> Update(DegreeToUpdateDto degreeToUpdateDto, int degreeId)
         {
-
+            if(degreeToUpdateDto.Id != degreeId)
+                return BadRequest();
 
             if (degreeToUpdateDto == null)
                 return BadRequest();
 
-            var degreeExist = _degreeService.GetDegree(degreeId);
+            var degreeExist = await this.degreeService.Get(degreeId);
 
             if (degreeExist == null)
-                return NotFound("No se encontro la carrera que deseas actualizar");
+                return NotFound("We couldn't find that degree");
 
-
-            var result = _degreeService.UpdateDegree(degreeToUpdateDto, degreeId);
+            var result = await this.degreeService.Update(this.mapper.Map<Degree>(degreeToUpdateDto));
 
             if (result)
-                return Ok("Carrera actualizada con exito!");
+                return Ok("Degree updated successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
-
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpDelete("{degreeId}")]
-        public ActionResult DeleteDegree(int degreeId)
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        public async Task<ActionResult> DeleteDegree(int degreeId)
         {
-
-            var degreeExist = _degreeService.GetDegree(degreeId);
+            var degreeExist = await this.degreeService.Get(degreeId);
 
             if (degreeExist == null)
-                return NotFound("No se encontro la carrera que deseas eliminar");
+                return NotFound("We couldn't find that degree");
 
-            var result = _degreeService.DeleteDegree(degreeId);
+            var result = await this.degreeService.Delete(degreeId);
 
             if (result)
-                return Ok("Carrera eliminada con exito.");
+                return Ok("Degree deleted successfully");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Algo salio mal, vuelve a intentarlo" });
-
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Something went wrong, try again" });
         }
     }
 }

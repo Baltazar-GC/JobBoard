@@ -1,6 +1,7 @@
 ﻿using backend.Contexts;
 using backend.Entities;
 using backend.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repositories.Implementations
 {
@@ -10,56 +11,41 @@ namespace backend.Repositories.Implementations
         {
         }
 
-        public bool AddDegree(Degree newDegree)
+        public async Task<bool> Add(Degree newDegree)
         {
-            if (newDegree is null)
-                return false;
-
             _context.Degrees?.Add(newDegree);
 
-            return SaveChanges();
+            return await SaveChanges();
         }
 
-        public bool DeleteDegree(int deletedDegreeId)
+        public async Task<bool> Delete(int deletedDegreeId)
         {
-            var degree = GetDegree(deletedDegreeId);
+            var degree = await Get(deletedDegreeId);
 
             if (degree == null)
                 return false;
 
-            _context.Degrees?.Remove(degree);
-            return SaveChanges();
+            _context.Degrees.Remove(degree);
+            return await SaveChanges();
         }
 
-        public Degree? GetDegree(int degreeId)
+        public Task<Degree?> Get(int degreeId)
         {
-            var degreeExist = IsDegree(degreeId);
-            if (degreeExist)
-                return _context.Degrees?.FirstOrDefault(d => d.Id == degreeId);
-            return null;
+            return _context.Degrees.FirstOrDefaultAsync(d => d.Id == degreeId);
         }
 
-        public ICollection<Degree>? GetDegrees()
+        public async Task<ICollection<Degree>> List()
         {
-            var degrees = _context.Degrees?.ToList();
-
-            if (degrees is null || degrees.Count() <= 0)
-                return null;
+            var degrees = await _context.Degrees.ToListAsync();
 
             return degrees;
         }
 
-        public bool IsDegree(int degreeId)
+        public async Task<bool> Update(Degree updatedDegree)
         {
-            var degree = _context.Degrees?.FirstOrDefault(d => d.Id == degreeId);
-            if (degree is null)
-                return false;
-            return true;
-        }
+            _context.Degrees.Update(updatedDegree);
 
-        public bool UpdateDegree()
-        {
-            return SaveChanges();
+            return await SaveChanges();
         }
     }
 }

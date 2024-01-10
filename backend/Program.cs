@@ -15,8 +15,6 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
 builder.Services.AddDbContext<ApplicationUtnContext>(dbContextOptions => dbContextOptions.UseSqlite(
     builder.Configuration["ConnectionStrings:DefaultConnection"]));
 
@@ -51,7 +49,6 @@ builder.Services.AddSwaggerGen(setupAction =>
     });
 });
 
-
 builder.Services
     .AddHttpContextAccessor()
     .AddAuthorization()
@@ -71,7 +68,6 @@ builder.Services
         };
     });
 
-
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;
@@ -86,7 +82,6 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 
 builder.Services.AddScoped<IJwtGeneratorService, JwtGeneratorService>();
-builder.Services.AddScoped<IDegreeService, DegreeService>();
 builder.Services.AddScoped<IDegreeRepository, DegreeRepository>();
 builder.Services.AddScoped<ITechnologyLevelRepository, TechnologyLevelRepository>();
 builder.Services.AddScoped<ITechnologyRepository, TechnologyRepository>();
